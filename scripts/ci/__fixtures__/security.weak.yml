@@ -1,0 +1,16 @@
+# Fixture: a scan that cannot block anything. Must fail the REQ-006 check.
+name: Security
+on:
+  pull_request:
+    branches: [staging, main]
+permissions:
+  contents: read
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          severity: CRITICAL
+          exit-code: '0'

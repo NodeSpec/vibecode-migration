@@ -1,0 +1,10 @@
+# Fixture: runs untrusted pull request code with a write token. Must fail the REQ-016 check.
+name: Pull request target
+on: [pull_request_target]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

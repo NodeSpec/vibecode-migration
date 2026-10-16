@@ -1,0 +1,11 @@
+# Fixture: a third-party action referenced by a movable tag. Must fail the REQ-007 check.
+name: Unpinned
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4

@@ -1,0 +1,13 @@
+# Fixture: a test workflow that a paths filter could skip. Must fail the REQ-005 check.
+name: CI
+on:
+  pull_request:
+    branches: [staging, main]
+    paths: ['src/**']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test

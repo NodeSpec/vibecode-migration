@@ -1,0 +1,9 @@
+# Fixture: no top-level permissions, so the token default applies. Must fail the REQ-016 check.
+name: No permissions
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
