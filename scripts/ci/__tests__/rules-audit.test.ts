@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { repoRoot } from './helpers.ts'
-import { auditRepo } from '../rules-audit.mjs'
+import { auditRepo, githubGetter } from '../rules-audit.mjs'
 
 type Rule = { type: string; parameters?: Record<string, unknown> }
 
@@ -139,11 +139,64 @@ describe('rules-audit comparison (fails closed)', () => {
     expect((await audit({ codeowners: new Error('HTTP 404') })).join('\n')).toMatch(/CODEOWNERS.*could not read.*404/)
   })
 
+  it('points at a missing CODEOWNERS file when GitHub answers 404, and not for other errors', async () => {
+    expect((await audit({ codeowners: new Error('HTTP 404 Not Found: Not Found') })).join('\n')).toMatch(
+      /is there a \.github\/CODEOWNERS file\?/,
+    )
+    expect((await audit({ codeowners: new Error('HTTP 403 Forbidden') })).join('\n')).not.toMatch(/is there a/)
+  })
+
   it('reports every problem in one run, not just the first', async () => {
     const problems = await audit({
       main: live('main', (rules) => withParams(rules, 'pull_request', { allowed_merge_methods: ['merge', 'rebase'] })),
       staging: [],
     })
     expect(problems.length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('reading GitHub (githubGetter)', () => {
+  const answer = (init: { status: number; statusText?: string; body: unknown }) =>
+    new Response(typeof init.body === 'string' ? init.body : JSON.stringify(init.body), {
+      status: init.status,
+      statusText: init.statusText ?? '',
+    })
+
+  it('sends the API version, the token as a bearer credential and reads JSON', async () => {
+    const calls: { url: string; headers: Record<string, string> }[] = []
+    const fetchImpl = async (url: string, init: { headers: Record<string, string> }) => {
+      calls.push({ url, headers: init.headers })
+      return answer({ status: 200, body: [{ type: 'deletion' }] })
+    }
+    const getJson = githubGetter('t0ken', { base: 'https://api.test', fetchImpl })
+    expect(await getJson('/repos/acme/app/rules/branches/main')).toEqual([{ type: 'deletion' }])
+    expect(calls[0].url).toBe('https://api.test/repos/acme/app/rules/branches/main')
+    expect(calls[0].headers.Authorization).toBe('Bearer t0ken')
+    expect(calls[0].headers['X-GitHub-Api-Version']).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('sends no credential when there is no token', async () => {
+    let sent: Record<string, string> = {}
+    const fetchImpl = async (_url: string, init: { headers: Record<string, string> }) => {
+      sent = init.headers
+      return answer({ status: 200, body: [] })
+    }
+    await githubGetter(undefined, { fetchImpl })('/x')
+    expect(sent).not.toHaveProperty('Authorization')
+  })
+
+  it("fails with the status and GitHub's own message, so the log says why", async () => {
+    const fetchImpl = async () =>
+      answer({ status: 403, statusText: 'Forbidden', body: { message: 'API rate limit exceeded for 203.0.113.9' } })
+    await expect(githubGetter('t', { fetchImpl })('/x')).rejects.toThrow(
+      'HTTP 403 Forbidden: API rate limit exceeded for 203.0.113.9',
+    )
+  })
+
+  it('still reports the status when the error body is not JSON, and never repeats the token', async () => {
+    const fetchImpl = async () => answer({ status: 502, statusText: 'Bad Gateway', body: '<html>oops</html>' })
+    const error = await githubGetter('s3cret-t0ken', { fetchImpl })('/x').catch((e: Error) => e)
+    expect((error as Error).message).toBe('HTTP 502 Bad Gateway')
+    expect((error as Error).message).not.toContain('s3cret-t0ken')
   })
 })
