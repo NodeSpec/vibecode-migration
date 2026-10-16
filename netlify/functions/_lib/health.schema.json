@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "title": "App-to-pipeline contract: functions",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "required": ["status", "deployContext", "paymentsMode"],
+  "properties": {
+    "branch": {
+      "type": "string",
+      "description": "Branch the deploy was built from, captured at build time"
+    },
+    "status": {
+      "const": "ok"
+    },
+    "commitRef": {
+      "type": "string",
+      "description": "Short git SHA of the deploy, captured at build time"
+    },
+    "paymentsMode": {
+      "enum": ["test", "live"],
+      "description": "From the placeholder payment key's prefix (sk_test_ or sk_live_); the key itself is never returned"
+    },
+    "deployContext": {
+      "enum": ["production", "deploy-preview", "branch-deploy", "dev"],
+      "description": "Netlify's deploy context, from context.deploy.context at runtime"
+    }
+  },
+  "description": "GET /api/health, called by smoke.yml after every Deploy Preview, staging and production deploy. Answers 200 with this body, Content-Type application/json and Cache-Control no-store, and never a key or a stack trace. Answers 500 with { error, correlationId } when the placeholder payment key is missing or unrecognised.",
+  "additionalProperties": false
+}
