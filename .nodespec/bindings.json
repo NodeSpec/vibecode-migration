@@ -80,10 +80,106 @@
       "language": "markdown"
     },
     {
+      "path": "netlify.toml",
+      "node": "Netlify",
+      "kind": "config",
+      "language": "toml"
+    },
+    {
+      "path": "netlify/functions/__tests__/build-info.fixture.json",
+      "node": "Health Check",
+      "kind": "config",
+      "language": "json"
+    },
+    {
+      "path": "netlify/functions/__tests__/contract.test.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/__tests__/health.leak.test.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/__tests__/health.test.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/__tests__/helpers.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/__tests__/modes.test.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/_lib/errors.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/_lib/health.schema.json",
+      "node": "Health Check",
+      "kind": "schema",
+      "language": "json"
+    },
+    {
+      "path": "netlify/functions/_lib/json-modules.d.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/_lib/modes.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/_lib/respond.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "netlify/functions/health.ts",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
       "path": "scripts/ci/__fixtures__/ci.paths-filter.yml",
       "node": "CI Pipeline",
       "kind": "config",
       "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/netlify.fallback-first.toml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "toml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/netlify.leaky.toml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "toml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/netlify.npm-install.toml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "toml"
     },
     {
       "path": "scripts/ci/__fixtures__/security.weak.yml",
@@ -110,6 +206,12 @@
       "language": "yaml"
     },
     {
+      "path": "scripts/ci/__tests__/build-info.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
       "path": "scripts/ci/__tests__/check-public-env.test.ts",
       "node": "CI Pipeline",
       "kind": "source",
@@ -123,6 +225,12 @@
     },
     {
       "path": "scripts/ci/__tests__/helpers.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/netlify-toml.test.ts",
       "node": "CI Pipeline",
       "kind": "source",
       "language": "typescript"
@@ -174,6 +282,18 @@
       "node": "CI Pipeline",
       "kind": "source",
       "language": "javascript"
+    },
+    {
+      "path": "scripts/write-build-info.mjs",
+      "node": "Health Check",
+      "kind": "source",
+      "language": "javascript"
+    },
+    {
+      "path": "tsconfig.functions.json",
+      "node": "Health Check",
+      "kind": "config",
+      "language": "json"
     },
     {
       "path": "vitest.pipeline.config.ts",

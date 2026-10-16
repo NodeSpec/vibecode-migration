@@ -129,3 +129,51 @@ On 2026-10-16 it was run from outside GitHub Actions against this repository and
 ### Running the pipeline checks locally
 
 `npm run build && npm run test:pipeline`. The contract check wants `dist/index.html`, so build first.
+
+## Health Check
+
+`GET /api/health` is pipeline instrumentation, not an app feature. It lives in `netlify/functions/health.ts`, is routed by the `/api/*` redirect in `netlify.toml`, and exists so `smoke.yml` can prove, after every deploy, which payment key that deploy holds.
+
+It answers `200` with `{ status, deployContext, paymentsMode, branch, commitRef }` (the contract is `netlify/functions/_lib/health.schema.json`), `Content-Type: application/json` and `Cache-Control: no-store`, and never a key or a stack trace.
+
+- `paymentsMode` comes from the prefix of `PAYMENT_SECRET_KEY`: `sk_test_` is `test`, `sk_live_` is `live`. A missing or unrecognised key is a `500` with `{ error: "payment_key_missing", correlationId }`.
+- `deployContext` comes from Netlify's `context.deploy.context` at runtime. Netlify's build variables do not exist when a function runs.
+- `branch` and `commitRef` are written at build time by `scripts/write-build-info.mjs` (the `postbuild` script) into `netlify/functions/_lib/build-info.json`, which git ignores. Each deploy carries its own, so a rolled-back deploy reports its own commit, and that is how a rollback is confirmed.
+- Every error is `{ error, correlationId }` with a fixed code (`request_failed`, `invalid_request`, `method_not_allowed`, `payment_key_missing`). The log line carries only the correlation id and the error's name.
+- Anything but `GET` is `405`; a query string or a body is `400`. There is no CORS header.
+
+Production must report `live` and every other deploy `test`. A preview or staging deploy that reports `live` fails `smoke.yml` loudly. That is the whole point.
+
+## Netlify
+
+`netlify.toml` at the repository root is the provisioning definition. There is no separate IaC tool. Netlify applies it over the site settings in its UI, so a change goes through pull-request review. It holds the build command (`npm ci && npm run build`, so installs come from the lockfile), `publish = "dist"`, `functions = "netlify/functions"`, `NODE_VERSION = "22"` (the same as `.nvmrc`), the `/api/*` redirect to the functions and, as the last rule, the single-page-app fallback to `/index.html`. It holds public values only.
+
+None of the settings below has been recorded yet. If the site already exists, the owner fills in each row (date and who set it) from what the dashboard shows, and corrects any setting that differs.
+
+### Netlify settings
+
+Settings that `netlify.toml` cannot hold, set in Netlify's dashboard by the owner. Record the key name, never a value.
+
+| Setting | Value to set | Date | Set by |
+|---|---|---|---|
+| Site | imported from the GitHub repository `NodeSpec/vibecode-migration` (never drag and drop a folder: that has no deploy contexts and no previews) | | |
+| Site name | | | |
+| Production branch | `main` | | |
+| Branch deploys | "Let me add individual branches", `staging` only (never All branches, or every agent branch publishes a public site) | | |
+| Deploy Previews | on for pull requests into `staging` and `main` | | |
+| Staging URL | `https://staging--<site>.netlify.app` | | |
+| `PAYMENT_SECRET_KEY` | "Contains secret values" ticked, scope Functions where the plan offers it, a different value for each deploy context: an `sk_live_` placeholder for Production, an `sk_test_` placeholder for Deploy Previews, another `sk_test_` placeholder for Branch: staging | | |
+| `SECRETS_SCAN_ENABLED` | not set. It must never be `false`, here or in `netlify.toml` | | |
+| Auto publishing | unlocked, except during a rollback (see below) | | |
+
+Placeholder values are generated on the owner's own machine (for example `openssl rand -hex 12` appended to `sk_live_placeholder_` or `sk_test_placeholder_`) and are never committed, logged or pasted into chat. A real payment provider's keys later replace them in the same slots, set the same way.
+
+### Rollback
+
+1. Netlify → Deploys → open the previous successful production deploy → **Publish deploy**.
+2. Immediately, Deploys → **Lock to stop auto publishing**. A new Git-triggered production deploy would otherwise overwrite the rollback.
+3. Fix the problem on a branch and merge it through `staging` to `main`.
+4. Only once the fix has merged through staging and its production deploy is ready, unlock auto publishing.
+5. Confirm the rollback against `GET /api/health`: `commitRef` is the commit of the deploy that was restored.
+
+Rehearsed: not yet. Once production is live, ship a harmless visible change (for example a footer text) through staging to production, roll back, confirm the change is gone and `commitRef` matches the previous deploy, then unlock. Record the date and the result here.
