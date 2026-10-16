@@ -3,11 +3,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv2020 from 'ajv/dist/2020.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import handler from '../health.ts'
 import { contextFor, fakeLiveKey, fakeTestKey, getHealth, stubKey } from './helpers.ts'
-
-vi.mock('../_lib/build-info.json', () => ({ default: { branch: 'staging', commitRef: 'abc1234' } }))
-
-const { default: handler } = await import('../health.ts')
 
 afterEach(() => vi.unstubAllEnvs())
 

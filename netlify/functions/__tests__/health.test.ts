@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import handler from '../health.ts'
 import { BUILD_INFO, contextFor, fakeLiveKey, fakeTestKey, getHealth, stubKey } from './helpers.ts'
-
-vi.mock('../_lib/build-info.json', () => ({ default: { branch: 'staging', commitRef: 'abc1234' } }))
-
-const { default: handler } = await import('../health.ts')
 
 afterEach(() => vi.unstubAllEnvs())
 

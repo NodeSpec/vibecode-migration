@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/write-build-info.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.functions.json",
     "test": "vitest run",
     "test:pipeline": "vitest run --config vitest.pipeline.config.ts"
   },

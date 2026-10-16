@@ -1,0 +1,28 @@
+# How every deploy context builds. Netlify applies this file over the site settings in its UI, so a
+# change here goes through pull-request review. Public values only: every key, token and password
+# lives in the Netlify UI, marked "Contains secret values" (see docs/runbook.md).
+
+[build]
+  # Install from the committed lockfile, so what is built is what was reviewed.
+  command = "npm ci && npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  # Matches .nvmrc.
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+
+# The API goes to the functions first...
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# ...and every other path falls back to the single-page app. This rule must stay last.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
