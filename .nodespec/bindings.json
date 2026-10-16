@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "bindings": [
+    {
+      "path": ".env.example",
+      "node": "Your App",
+      "kind": "config",
+      "language": "dotenv"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".github/public-env-allowlist.json",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "json"
+    },
+    {
+      "path": ".github/rulesets/README.md",
+      "node": "GitHub Repository",
+      "kind": "doc",
+      "language": "markdown"
+    },
+    {
+      "path": ".github/rulesets/main.json",
+      "node": "GitHub Repository",
+      "kind": "config",
+      "language": "json"
+    },
+    {
+      "path": ".github/rulesets/staging.json",
+      "node": "GitHub Repository",
+      "kind": "config",
+      "language": "json"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".github/workflows/promotion.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".github/workflows/rules-audit.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".github/workflows/security.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".github/workflows/smoke.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": ".trivyignore",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "text"
+    },
+    {
+      "path": "docs/runbook.md",
+      "node": "GitHub Repository",
+      "kind": "doc",
+      "language": "markdown"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/ci.paths-filter.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/security.weak.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/workflow.no-permissions.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/workflow.prt.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__fixtures__/workflow.unpinned.yml",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
+      "path": "scripts/ci/__tests__/check-public-env.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/contract.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/helpers.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/permissions.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/pins.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/rules-audit.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/smoke-health.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/__tests__/workflows.test.ts",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "typescript"
+    },
+    {
+      "path": "scripts/ci/check-public-env.mjs",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "javascript"
+    },
+    {
+      "path": "scripts/ci/rules-audit.mjs",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "javascript"
+    },
+    {
+      "path": "scripts/ci/smoke-health.mjs",
+      "node": "CI Pipeline",
+      "kind": "source",
+      "language": "javascript"
+    },
+    {
+      "path": "vitest.pipeline.config.ts",
+      "node": "CI Pipeline",
+      "kind": "config",
+      "language": "typescript"
+    }
+  ]
+}

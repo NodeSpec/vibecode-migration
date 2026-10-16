@@ -85,3 +85,47 @@ Steps only the repository owner can do. The pipeline work cannot confirm that an
 - [ ] After the CI workflows have run once on a pull request: apply the `staging` ruleset, then the `main` ruleset, and run `rules-audit` by hand after each.
 - [ ] Settings → Actions → General: default workflow token read-only, untick "Allow GitHub Actions to create and approve pull requests", require approval for outside contributors' workflows (REQ-016).
 - [ ] Run the two rehearsals: the failing-test pull request into `staging`, and a pull request straight into `main`.
+
+## CI Pipeline
+
+Five workflows in `.github/workflows/`. CI decides what may merge and proves each deploy behaves; it never deploys, because Netlify builds and publishes from Git on its own.
+
+| Workflow | Job (the check name) | Runs | What it does |
+|---|---|---|---|
+| `ci.yml` | `test` | every pull request into `staging` or `main` | `npm ci`, `lint`, `typecheck`, `npm test`, `build`, then `npm run test:pipeline` |
+| `security.yml` | `security-scan` | every pull request into `staging` or `main` | Trivy over the repository (vulnerable packages, committed secrets, misconfiguration; CRITICAL and HIGH fail), then `check-public-env`, then a Trivy secret scan of the built `dist/` |
+| `promotion.yml` | `promotion-source` | every pull request into `main` | fails unless the pull request comes from the `staging` branch of this repository (a branch called `staging` in a fork fails too) |
+| `smoke.yml` | `smoke` | after a successful Netlify deploy | calls `GET /api/health` on the deployed URL and checks it against the contract |
+| `rules-audit.yml` | `rules-audit` | weekly, and by hand | compares the rules GitHub enforces with `.github/rulesets/*.json` |
+
+The three check names `test`, `security-scan` and `promotion-source` are an interface: the rulesets require exactly those names, and `npm run test:pipeline` fails if a job is renamed, put in a matrix, or a ruleset requires a check no job provides.
+
+### Pinned actions
+
+Every third-party action is pinned to a full commit SHA, with the version in a trailing comment. Looked up on 2026-10-16 with `git ls-remote --tags` on each action's own repository, then checked to be a commit on the repository's default branch (no dangling commit behind a moved tag).
+
+| Action | Version | Commit | Commit date |
+|---|---|---|---|
+| `actions/checkout` | v7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` | 2026-07-17 |
+| `actions/setup-node` | v7.1.0 | `949feb2413d6458794dcd2491c4babbbce0c15c1` | 2026-10-07 |
+| `aquasecurity/trivy-action` | v0.36.0 | `ed142fd0673e97e23eac54620cfb913e5ce36c25` | 2026-04-22 |
+
+`trivy-action` v0.36.0 is an annotated tag: the tag object is `a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8` and the pin is the commit it points at. Its commit is dated after the March 2026 incident in which attackers repointed nearly all of its version tags. A pin protects against a moved tag; it does not vouch for the code at that commit, so the code owner reviews every pin change, including Dependabot's.
+
+Dependabot proposes weekly updates for `github-actions` and `npm`, as pull requests into `staging`.
+
+### Checks that need a real run
+
+- **Trivy has not run yet.** The first scan's findings on this repository are not known until `security-scan` runs on a pull request. Fix what an upgrade fixes, and list the rest in `.trivyignore` with a reason, owner and review date, before `security-scan` becomes a required check.
+- **Deploy environment names.** `smoke.yml` logs the environment name GitHub receives from Netlify on every run. `scripts/ci/smoke-health.mjs` treats a name starting with "Production" as production and expects live payments there and test payments everywhere else. After the first deploy, check the log and fix `isProduction()` if Netlify names it differently.
+- **`smoke.yml` concurrency** is keyed by deployment id, not by branch, so a status event for another deploy of the same branch cannot cancel a running check.
+
+### rules-audit
+
+Run it by hand right after applying a ruleset (Actions → rules-audit → Run workflow). That run is the evidence for the rules-API test cases. It fails closed: an API error, an empty rule list or any mismatch is a failure.
+
+On 2026-10-16 it was run from outside GitHub Actions against this repository and failed as it should: no active rules on `staging` or `main`, and no CODEOWNERS file.
+
+### Running the pipeline checks locally
+
+`npm run build && npm run test:pipeline`. The contract check wants `dist/index.html`, so build first.
