@@ -268,3 +268,30 @@ describe('every workflow', () => {
     }
   })
 })
+
+describe('history-scan.yml (REQ-019: a full-history secret scan before the rules switch on)', () => {
+  const w = () => real('history-scan.yml')
+  const scanStep = () => stepsOf(w().jobs?.['history-scan']).find((s) => /gitleaks/.test(s.run ?? ''))
+
+  it('runs by hand and weekly only, never on a pull request', () => {
+    expect(Object.keys(triggers(w())).sort()).toEqual(['schedule', 'workflow_dispatch'])
+  })
+
+  it('checks out the full history, not just the latest commit', () => {
+    const checkout = stepsOf(w().jobs?.['history-scan']).find((s) => s.uses?.startsWith('actions/checkout@'))
+    expect(String(checkout?.with?.['fetch-depth'])).toBe('0')
+  })
+
+  it('runs gitleaks from an image pinned by digest, redacting values and failing on any finding', () => {
+    const run = scanStep()?.run ?? ''
+    expect(run).toMatch(/ghcr\.io\/gitleaks\/gitleaks@sha256:[0-9a-f]{64}\b/)
+    expect(run, 'a tag can move: pin the image by digest').not.toMatch(/gitleaks\/gitleaks:/)
+    expect(run).toContain('--redact')
+    expect(run).toMatch(/--exit-code 1\b/)
+  })
+
+  it('scans the checked-out repository read-only, as the job named history-scan', () => {
+    expect(w().jobs).toHaveProperty('history-scan')
+    expect(scanStep()?.run).toMatch(/-v "\$PWD:\/repo"/)
+  })
+})

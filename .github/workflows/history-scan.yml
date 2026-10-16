@@ -1,0 +1,36 @@
+# Scans the full git history for keys that were ever committed (REQ-019). AI app builders often commit
+# keys, so the owner runs this once by hand (Actions > history-scan > Run workflow) BEFORE any rule
+# switches on. Every finding is rotated at its provider, replaced in Netlify and recorded in
+# .gitleaksignore. It then runs weekly. The job name `history-scan` is for people, not a required check.
+name: History scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  history-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # gitleaks v8.30.0, run from its image by digest (a tag can move). --redact keeps key values out
+      # of the log. The container runs as root over files owned by the runner user, so git is told this
+      # directory is safe. gitleaks also reads /repo/.gitleaksignore (rotated keys) by itself.
+      - name: Scan the full history for committed keys
+        run: |
+          docker run --rm -v "$PWD:/repo" \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
+            ghcr.io/gitleaks/gitleaks@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9 \
+            git /repo --redact --exit-code 1

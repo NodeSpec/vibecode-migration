@@ -44,6 +44,12 @@
       "language": "yaml"
     },
     {
+      "path": ".github/workflows/history-scan.yml",
+      "node": "GitHub Repository",
+      "kind": "config",
+      "language": "yaml"
+    },
+    {
       "path": ".github/workflows/promotion.yml",
       "node": "CI Pipeline",
       "kind": "config",
@@ -66,6 +72,12 @@
       "node": "CI Pipeline",
       "kind": "config",
       "language": "yaml"
+    },
+    {
+      "path": ".gitleaksignore",
+      "node": "GitHub Repository",
+      "kind": "config",
+      "language": "text"
     },
     {
       "path": ".trivyignore",

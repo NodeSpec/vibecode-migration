@@ -73,6 +73,16 @@ State of the rules on 2026-10-16, read from `GET /repos/NodeSpec/vibecode-migrat
 - `main`: `allowed_merge_methods` is `["merge"]`; required checks `test`, `security-scan`, `promotion-source`.
 - `staging`: `required_approving_review_count` is 1; required checks `test`, `security-scan`.
 
+### History scan (REQ-019)
+
+`history-scan.yml` runs gitleaks over the full git history, by hand and weekly. Run it once (Actions → history-scan → Run workflow) before any rule switches on. For each finding: revoke the key at its provider, set the new value in Netlify for every deploy context that used it and redeploy, then record the key's name (never its value), provider and date here, and add the finding's fingerprint to `.gitleaksignore` with a comment above it. No findings? Write "full-history scan YYYY-MM-DD: no findings" here.
+
+It runs gitleaks v8.30.0 from `ghcr.io/gitleaks/gitleaks@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9`, pinned by digest because a tag can move.
+
+- **Why v8.30.0 and not the newest, v8.30.1.** Every gitleaks release tag from v8.24.3 to v8.30.0 is a commit on the project's default branch. v8.30.1 (tagged 2026-03-12, "update goreleaser") points at a commit that is in no branch of the project. That may be an ordinary release-tooling fix, but it could not be verified from here, so it was not used. The requirement is v8.19 or later.
+- **What was and was not verified.** The digest was read from the `ghcr.io` registry API on 2026-10-16. The image's build time and signature could not be checked from that environment. Before the first run, `docker buildx imagetools inspect ghcr.io/gitleaks/gitleaks:v8.30.0` should print the same digest.
+- **Not run yet.** The scan has not run, here or on GitHub. The workflow tells git that `/repo` is a safe directory, which is the standard fix for git's "dubious ownership" error when a container running as root reads files owned by the runner user. That setting has not been exercised, so if the first run stops on that error, fix it in a pull request.
+
 ### Owner checklist
 
 Steps only the repository owner can do. The pipeline work cannot confirm that any of them took effect, so each one ends with a way to find out.
