@@ -1,0 +1,39 @@
+# After Netlify reports a successful deploy (Deploy Preview, staging or production), calls
+# GET /api/health on that deploy and checks the answer against the App-to-pipeline contract:
+# functions. Production must report live payments and every other deploy test payments.
+# CI never deploys; Netlify builds and publishes from Git on its own.
+name: Smoke
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per deployment, so a status event for another deploy of the same branch cannot cancel it.
+  group: ${{ github.workflow }}-${{ github.event.deployment.id }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # Logs the environment name GitHub receives from Netlify on every run. If production is not
+      # reported as "Production", fix isProduction() in scripts/ci/smoke-health.mjs from that log.
+      - name: Check /api/health on the deployed URL
+        run: node scripts/ci/smoke-health.mjs
+        env:
+          DEPLOY_URL: ${{ github.event.deployment_status.environment_url }}
+          DEPLOY_ENVIRONMENT: ${{ github.event.deployment_status.environment }}

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Written by the postbuild script; each deploy carries its own
+netlify/functions/_lib/build-info.json

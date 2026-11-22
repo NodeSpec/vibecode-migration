@@ -1,0 +1,6 @@
+# Keys that were committed in the past and have since been rotated. One gitleaks fingerprint per
+# line (the "Fingerprint" gitleaks prints for a finding: commit:file:rule:line), with a comment line
+# above it, for example:
+#   # rotated YYYY-MM-DD: <provider> key, replaced in Netlify
+# Never list a key whose value is still live. Rotation fixes a leaked key; this file only records it.
+# Nothing is listed yet: the first full-history scan has not been run.

@@ -1,0 +1,50 @@
+# Trivy scans the repository for vulnerable packages and committed secrets, a check script looks for
+# secret-named variables exposed to the browser, and a second Trivy scan looks for credentials in the
+# built site. The job name `security-scan` is an interface: the rulesets require exactly that name.
+name: Security
+
+on:
+  pull_request:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Before npm ci, so the scan reads what is committed rather than node_modules.
+      - name: Scan the repository for vulnerable packages and committed secrets
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          trivyignores: .trivyignore
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Look for secret-named variables exposed to the browser
+        run: node scripts/ci/check-public-env.mjs
+      # Rebuilt here, not passed between workflows, so this job needs nothing from CI.
+      - run: npm ci
+      - run: npm run build
+      - name: Scan the built site for credentials
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: dist
+          scanners: secret
+          exit-code: '1'

@@ -1,0 +1,4 @@
+# Findings the security scan is allowed to ignore. One ID per line, each with a comment above it:
+#   # <why it is acceptable for now>; owner <name>; review by YYYY-MM-DD
+# Nothing is ignored today. The first scan's findings are fixed or listed here before the
+# security-scan check becomes required (see docs/runbook.md).
